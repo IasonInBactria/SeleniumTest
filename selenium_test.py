@@ -2,161 +2,55 @@
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import lxml
+import time
 
-driver = webdriver.Chrome('D:/WebDrivers/chromedriver.exe')
-driver.get("http://www.python.org")
-assert "Python" in driver.title
-elem = driver.find_element_by_name("q")
-elem.send_keys("pycon")
-elem.send_keys(Keys.RETURN)
-print driver.page_source
+driver = webdriver.Firefox()
+driver.maximize_window()
+# driver.get("http://www.bjguahao.gov.cn/index.htm")
 
-import requests
-from lxml import html
+# 直接跳转到北医三院页面
+puh3_page = driver.get('http://www.bjguahao.gov.cn/hp/appoint/142.htm')
+# 选择医院（北医三院）
+# haidian_click = driver.find_element_by_xpath('//li[@class="index_c_ks_rb" and a/text()="海淀区"]')
+# # 不能直接点击，需要执行JS脚本
+# driver.execute_script('arguments[0].click();', haidian_click)
+# time.sleep(1)
+# # 页面中有多个北医三院，必须从浏览器中利用网页查看工具拷贝完整的XPath路径
+# driver.find_element_by_xpath('//div[@id="index_c_left"]/div/div[2]/div[1]/div[2]/div[7]/dl[1]/dd/h2/a').click()
+# # 选择口腔治疗号
+# print driver.page_source
+# 填写用户名密码，自动登录
+login_btn = driver.find_element_by_xpath('//a[@class="db_denglu"]')
+login_btn.click()
+phone_no = driver.find_element_by_id('mobileQuickLogin')
+phone_no.send_keys('15810538816')
+password = driver.find_element_by_id('pwQuickLogin')
+password.send_keys('gyang0205006')
+send_login_btn = driver.find_element_by_id('quick_login')
+send_login_btn.click()
+time.sleep(1)
+oral_dep = driver.find_element_by_xpath('//div[@class="kfyuks"]/div[@class="kfyuks_left"]/div[4]/div[2]/div/ul/li[5]/a')
+oral_dep.click()
+time.sleep(5)
+
+# 选择可预约号源
+while True:
+    cur_element = driver.find_elements_by_xpath('//td[@class="ksorder_kyy"]')
+    if len(cur_element) <= 0:
+        # 没有号源，刷新页面
+        driver.refresh()
+        time.sleep(1)
+    else:
+        cur_element[0].click()
+        time.sleep(1)
+        driver.find_elements_by_xpath('//a[@class="ksorder_dr1_syhy"]')[0].click()
+        time.sleep(1)
+        driver.find_element_by_id('btnSendCodeOrder').click()
+        time.sleep(1)
+        driver.switch_to.alert.accept()
+        break
 
 
-# class CrawlerFor114:
-#
-#     __doc__ = '''爬取114网站信息，完成模拟登录，预约挂号等功能'''
-#
-#     def __init__(self, url, option = 'print_data_out', src_tag=False):
-#
-#
-#         self.option = option
-#         self.url = url
-#         self.header = {}
-#         self.header['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0'
-#         self.header['Host'] = 'www.bjguahao.gov.cn'
-#         self.header['Refer'] = 'http://www.bjguahao.gov.cn/hp/appoint/142.htm'
-#         self.cookie = {'Hm_lvt_bc7eaca5ef5a22b54dd6ca44a23988fa': '1473298353,1473298975,1473300406,1473314010',
-#                        'JSESSIONID': 'FC1151C1B1410FA437166E183B0654FB',
-#                        'SESSION_COOKIE': '3cab1829cea36cdbceb37f7e',
-#                        'Hm_lpvt_bc7eaca5ef5a22b54dd6ca44a23988fa': '1473314034'
-#                         }
-#
-#     def send_request(self):
-#
-#         start_url = self.url
-#         try:
-#             ret = requests.get(start_url, cookies=self.cookie, headers=self.header)
-#         except requests.RequestException, e:
-#             print 'chaxunshibai '
-#             print e.strerror
-#             print ret.status_code
-#
-#         if ret.status_code == 200:
-#             print 'success!'
-#         else:
-#             print('login failed! status code:%d\n' % ret.status_code)
-#             return
-#
-#         html_content = ret.text
-        # print html_content + '\n'
-        # self.process_xpath_source(html_content)
 
-    # def process_xpath_source(self, source):
-    #     if len(source) <= 0:
 
-    #         return
-    #     else:
-    #         xpath_tree = html.fromstring(source)
-
-    #         print '*' * 20
-    #         self.user_name = xpath_tree.xpath('//a[@class="name"]/text()')[0].encode('utf-8')
-
-    #         try:
-    #             self.user_location = xpath_tree.xpath('//span[@class="location item"]/@title')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_gender = xpath_tree.xpath('//span[@class="item gender"]/i/@class')[0].encode('utf-8')
-    #             if 'female' in self.user_gender:
-    #                 self.user_gender = 'female'
-    #             else:
-    #                 self.user_gender = 'male'
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_employment = xpath_tree.xpath('//span[@class="employment item"]/@title')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_profession = xpath_tree.xpath('//span[@class="education-extra item"]/@title')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_school = xpath_tree.xpath('//span[@class="education item"]/@title')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_major = xpath_tree.xpath('//span[@class="education-extra item"]/@title')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_info = xpath_tree.xpath("//span[@class='bio']/@title")[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_introduction = xpath_tree.xpath('//span[@class="content"]/text()')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_weibo_addr = xpath_tree.xpath('//a[@class="zm-profile-header-user-weibo"]/@href')[0].encode('utf-8')
-
-    #         except:
-    #             pass
-    #
-
-    #
-    #         try:
-    #             self.user_followees_num = int(xpath_tree.xpath('//a[@href="/people/' + self.user_id +'/followees"]/strong/text()')[0].encode('utf-8'))
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_followers_num = int(xpath_tree.xpath('//a[@href="/people/' + self.user_id +'/followers"]/strong/text()')[0].encode('utf-8'))
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_agree_num = int(xpath_tree.xpath('//span[@class="zm-profile-header-user-agree"]/strong/text()')[0].encode('utf-8'))
-
-    #         except:
-    #             pass
-    #         try:
-    #             self.user_thank_num = int(xpath_tree.xpath('//span[@class="zm-profile-header-user-thanks"]/strong/text()')[0].encode('utf-8'))
-
-    #         except:
-    #             pass
-    #         print '*' * 25
-
-    #
-    #         if self.src_tag is True:
-    #             user_followee_list = xpath_tree.xpath('//div[@class="zm-profile-card zm-profile-section-item zg-clear no-hovercard"]/a/@title')
-    #             print len(user_followee_list)
-
-# if __name__ == '__main__':
-#     department_dict = {'口腔治疗号':'142-200001644', '泌尿外科':'142-200039550'}
-#     htm_suffix = ''
-#
-#     while True:
-#         print '请输入预约科室：'
-#         department_input = raw_input()
-#         for item in department_dict.keys():
-#             if item == department_input:
-#                 htm_suffix = department_dict[item]
-#         if len(htm_suffix) <= 0:
-#             print '未查询到相关科室，请重新输入！'
-#         else:
-#             start_url = 'http://www.bjguahao.gov.cn/dpt/appoint/' + htm_suffix + '.htm'
-#             crawler = CrawlerFor114(start_url)
-#             crawler.send_request()
-#             break
